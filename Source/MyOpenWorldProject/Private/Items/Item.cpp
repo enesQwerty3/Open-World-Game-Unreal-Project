@@ -7,15 +7,15 @@
 // Sets default values
 AItem::AItem()
 {
-	MyItemState = ItemState::NotEqquipped;
+	MyItemState = ItemState::NotEquipped;	//default item state for not yet interacted items
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Item Mesh"));  //unreal factory method
 	SetRootComponent(ItemMesh);
-
 	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("ShpereCollision"));
 	SphereCollision->SetupAttachment(RootComponent);
-		
+	
 }
 	 
 // Called when the game starts or when spawned
@@ -23,7 +23,6 @@ void AItem::BeginPlay(){
 	Super::BeginPlay();
 	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &AItem::SphereOnComponentBeginOverlap);
 	SphereCollision->OnComponentEndOverlap.AddDynamic(this, &AItem::SphereOnComponentEndOverlap);
-
 }
 
 
@@ -57,16 +56,29 @@ void AItem::Tick(float DeltaTime)
 void AItem::SphereOnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	FString OtherActorName(OtherActor->GetName());
-	UE_LOG(LogTemp, Warning, TEXT("Begin Overlap - Other Actor Name: %s"), *OtherActorName);
+	FString ThisActorName(this->GetName());
+	UE_LOG(LogTemp, Warning, TEXT("%s begin Overlap with: %s"), *ThisActorName, *OtherActorName);
 }
 
 void AItem::SphereOnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex) {
 	FString OtherActorName(OtherActor->GetName());
-	UE_LOG(LogTemp, Warning, TEXT("End Overlap - Other Actor Name: %s"), *OtherActorName);
+	FString ThisActorName(this->GetName());
+	UE_LOG(LogTemp, Warning, TEXT("%s end overlap with: %s"), *ThisActorName, *OtherActorName);
 }
 
 
 void AItem::Equip(AWizard* Player, FName SocketName)
 {
-
+	UE_LOG(LogTemp, Display, TEXT("Equipped Item"));
 }
+
+void AItem::Unequip(AWizard* Player, FName SocketName)
+{
+	UE_LOG(LogTemp, Display, TEXT("Unequipped Item"));
+}
+
+void AItem::Drop(AWizard* Player, FName SocketName)
+{
+	UE_LOG(LogTemp, Display, TEXT("Dropped Item"));
+}
+

@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
 #include "Item.generated.h"
 
 class USphereComponent;
 class AWizard;
 
 UENUM(BlueprintType)
-enum class ItemState : uint8 { NotEqquipped, Equipped };
+enum class ItemState : uint8 {NotEquipped, Equipped, Holstered};
 
 UCLASS()
 class MYOPENWORLDPROJECT_API AItem : public AActor
@@ -23,39 +24,30 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
-	virtual void Equip(AWizard* Player, FName SocketName);
 
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE float SetRunningTime(float _runningTime) {runningTime = _runningTime; return runningTime;}
+	
 	
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetRunningTime() {return runningTime;}
 	
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE float SetMovementRate(float _movementRate) { movementRate = _movementRate; return movementRate;}
+	FORCEINLINE float GetMovementRate() {return movementRate;}
 	
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE float GetMovementRate() {return movementRate;}
+	FORCEINLINE ItemState GetMyItemState() { return MyItemState; }
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE UStaticMeshComponent* GetStaticMesh() {return ItemMesh;}
+	virtual void Equip(AWizard* Player, FName SocketName);
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE void SetMyItemState(ItemState _MyItemState) { MyItemState = _MyItemState;}
+	virtual void Unequip(AWizard* Player, FName SocketName);
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE ItemState GetMyItemState(){ return MyItemState;}
+	virtual void Drop(AWizard* Player, FName SocketName);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	virtual void SphereOnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	UFUNCTION()
-	virtual void SphereOnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* ItemMesh;
@@ -63,9 +55,31 @@ protected:
 	UPROPERTY(EditAnywhere)
 	USphereComponent* SphereCollision;
 
-	UPROPERTY(EditAnywhere, Category="ITEM STATE")
+	UPROPERTY(EditAnywhere, Category = "ITEM STATE")
 	ItemState MyItemState;
 
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE UStaticMeshComponent* GetStaticMesh() { return ItemMesh; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE USphereComponent* GetSphereCollision() { return SphereCollision; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void SetMyItemState(ItemState _MyItemState) { MyItemState = _MyItemState; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float SetRunningTime(float _runningTime) { runningTime = _runningTime; return runningTime; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float SetMovementRate(float _movementRate) { movementRate = _movementRate; return movementRate; }
+
+	UFUNCTION()
+	virtual void SphereOnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	virtual void SphereOnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	
 private: 
 	
 	UPROPERTY(EditAnywhere, Category = "ItemProperty - Sine Values")		//BlueprintReadOnly , VisibleAnywhere, EditAnywhere , Category = "VALUE"
@@ -74,4 +88,6 @@ private:
 	UPROPERTY(EditAnywhere, Category = "ItemProperty - Movement Values")
 	float movementRate = 200.0f;
 
-	};
+
+
+};
