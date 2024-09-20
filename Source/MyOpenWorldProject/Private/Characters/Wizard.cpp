@@ -23,7 +23,9 @@
 #include "Components/CapsuleComponent.h"
 //
 
+//RInterp
 #include "Math/UnrealMathUtility.h"
+//
 
 AWizard::AWizard()
 {
@@ -47,7 +49,14 @@ AWizard::AWizard()
 
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));		//assign Camera object
 	ViewCamera->SetupAttachment(SpringArm);	//attach to spring arm component
-				
+	
+	CameraZoomInPos = CreateDefaultSubobject<USceneComponent>(TEXT("CameraZoomInPos"));
+	CameraZoomInPos->SetupAttachment(GetRootComponent());
+	
+	CameraZoomOutPos = CreateDefaultSubobject<USceneComponent>(TEXT("CameraZoomOutPos"));
+	CameraZoomOutPos->SetupAttachment(GetRootComponent());
+
+	
 	AutoPossessPlayer = EAutoReceiveInput::Player0;		//set possession of Player0
 }
 
@@ -61,7 +70,8 @@ void AWizard::BeginPlay()
 			Subsystem->AddMappingContext(InputMappingContext, 0);	//add InputMappingContext field to enhanced input player subsystem
 		}
 	}
-	
+
+	WizardTimerManager = &GetWorld()->GetTimerManager();
 }
 
 void AWizard::Tick(float DeltaTime)
@@ -208,26 +218,24 @@ void AWizard::Aim(const FInputActionValue& value)
 	bool isAimValid = GetController() && value.Get<bool>() && GetPlayerWeapon() && GetWizardAState() != WizardActionState::Attacking  && GetWizardPState() != WizardPlayerState::Jumping;
 	if (isAimValid) {
 		SetWizardAState(WizardActionState::Aiming);
-		//UE_LOG(LogTemp, Warning, TEXT("AIMING"));
 
-		FRotator CapsuleRotation = GetCapsuleComponent()->GetComponentRotation();	//current rotation
-		FRotator ControllerRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);							//target rotation
-		
-		bool isCameraRotationOver = RotateCameraToAim(CapsuleRotation, ControllerRotation);
-		
-		if (isCameraRotationOver && !isCameraLocked) {
-			LockCamera(true);
-			UE_LOG(LogTemp, Warning, TEXT("LockCamera(true)"));
-		}
+		RotateCameraToAim(true);
 		//zoom camera after interp to aiming rotation
 		
+		ZoomCamera(true);		//ZoomCamera and LockCamera will be called with timer!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		
+	
 	}
 
 	else if (!value.Get<bool>()) // may be cancel attack if aiming cancelled? if(notAiming && Attacking) cancel attack
 	{
 		//set camera to default position here	
 		SetWizardAState(WizardActionState::None);
-		LockCamera(false);
+	
+		//ZoomCamera(false);
+		RotateCameraToAim(false);
+		ZoomCamera(false);
+		
 	}
 }
 
@@ -236,17 +244,56 @@ void AWizard::Attack(const FInputActionValue& value) //animation gets stuck when
 	bool isAttackValid = GetController() && value.Get<bool>() && GetPlayerWeapon() && GetWizardAState() == WizardActionState::Aiming /* || GetWizardAState() != WizardActionState::Attacking*/ && GetWizardPState() != WizardPlayerState::Jumping;
 	if (isAttackValid) {
 		SetWizardAState(WizardActionState::Attacking);
-		LockCamera(true);			//lock camera while attacking
 		PlayerWeapon->Fire(this, ViewCamera);	//fire weapon
-		FTimerHandle AttackCooldown;
-		FTimerDelegate AttackCooldownDelegate = FTimerDelegate::CreateUObject(this, &AWizard::SetWizardAState, WizardActionState::None); 
-		GetWorldTimerManager().SetTimer(AttackCooldown, AttackCooldownDelegate, 1.5f, false);	//set cooldown for next attack
+		SetAttackCooldown();
+		
+	}
+}
+
+void AWizard::SetAttackCooldown()
+{
+	FTimerHandle AttackCooldown;
+	FTimerDelegate AttackCooldownDelegate = FTimerDelegate::CreateUObject(this, &AWizard::SetWizardAState, WizardActionState::None);
+	GetWorldTimerManager().SetTimer(AttackCooldown, AttackCooldownDelegate, 1.5f, false);	//set cooldown for next attack
+}
+
+void AWizard::RotateCameraToAim(bool rotate) //it rotates capsule component to aiming pos by timer
+{
+	if (rotate) {
+		if(!isCameraRotated && !WizardTimerManager->TimerExists(RotateCameraToAimTimer)) {
+			//if camera rotation timer is not set
+			FTimerDelegate RotateCameraToAimDelegate = FTimerDelegate::CreateUObject(this, &AWizard::PerformCameraRotationToAim);
+			WizardTimerManager->SetTimer(RotateCameraToAimTimer, RotateCameraToAimDelegate, deltaTime, true, -1.0f);
+			UE_LOG(LogTemp, Warning, TEXT("	WizardTimerManager->SetTimer"));
+		}
 	}
 
-	else if (!value.Get<bool>() && GetWizardAState() != WizardActionState::Aiming) {
-		if (isCameraLocked) {
-			LockCamera(false);
+	else{
+		isCameraRotated = false;
+		LockCamera(false);
+		if (WizardTimerManager->TimerExists(RotateCameraToAimTimer)) {
+			WizardTimerManager->ClearTimer(RotateCameraToAimTimer);
 		}
+	}
+	
+}
+
+void AWizard::PerformCameraRotationToAim() {
+	FRotator CapsuleRotation = GetCapsuleComponent()->GetComponentRotation();		//current rotation
+	FRotator ControllerRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);	//target rotation (only use yaw rotation)
+
+	if (!CapsuleRotation.Equals(ControllerRotation, 1)) {
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		FRotator NewRotation = FMath::RInterpTo(CapsuleRotation, ControllerRotation, deltaTime, 10.0f);
+		GetCapsuleComponent()->SetWorldRotation(NewRotation);	//rotate capsule component to new rotation
+		isCameraRotated = false;
+	}
+
+	else {
+		isCameraRotated = true;
+		WizardTimerManager->ClearTimer(RotateCameraToAimTimer);
+		LockCamera(true);
+		UE_LOG(LogTemp, Warning, TEXT("	WizardTimerManager->ClearTimer"));
 	}
 }
 
@@ -264,16 +311,50 @@ void AWizard::LockCamera(bool lock)
 	isCameraLocked = lock;
 }
 
-bool AWizard::RotateCameraToAim(FRotator CurrentRotation, FRotator TargetRotation) //it rotates capsule component to aiming pos
+void AWizard::ZoomCamera(bool zoomIn)
 {
-	if (!CurrentRotation.Equals(TargetRotation, 1)) {
-		GetCharacterMovement()->bOrientRotationToMovement = false;
-		FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, deltaTime, 10.0f);
-		GetCapsuleComponent()->SetWorldRotation(NewRotation);	//rotate capsule component to new rotation
-		return false;
+	if (isCameraZoomed && !zoomIn || !isCameraZoomed && zoomIn) {
+		if (!WizardTimerManager->TimerExists(ZoomCameraTimer)) {
+			FTimerDelegate ZoomCameraTimerDelegate = FTimerDelegate::CreateUObject(this, &AWizard::PerformZoomCamera, zoomIn);
+			WizardTimerManager->SetTimer(ZoomCameraTimer, ZoomCameraTimerDelegate, deltaTime, true, -1.0f);
+		}
+	}
+}
+
+void AWizard::PerformZoomCamera(bool zoomIn) {
+	//1- change spring arm's location up to character right shoulder
+	//2- then zoom in to specified pos
+	FVector SpringArmCurrentPos = SpringArm->GetRelativeLocation();
+	float springArmCurrentLength = SpringArm->TargetArmLength;
+
+	FVector SpringArmTargetPos;
+	float springArmTargetLength;
+
+	if (zoomIn) {
+		SpringArmTargetPos = CameraZoomInPos->GetRelativeLocation();
+		springArmTargetLength = 0.0f;		//spring arm zoom in length
 	}
 
 	else {
-		return true;
+		SpringArmTargetPos = CameraZoomOutPos->GetRelativeLocation();
+		springArmTargetLength = 300.0f;		//spring arm zoom out length
+	}
+
+	if (!SpringArmCurrentPos.Equals(SpringArmTargetPos)) {
+		FVector NewPos = FMath::VInterpTo(SpringArmCurrentPos, SpringArmTargetPos, deltaTime, 10.0f);
+		SpringArm->SetRelativeLocation(NewPos);
+
+		float newLength = FMath::FInterpTo(springArmCurrentLength, springArmTargetLength, deltaTime, 10.0f);
+		SpringArm->TargetArmLength = newLength;
+
+		isCameraZoomed = false;
+	}
+
+	else {
+		isCameraZoomed = true;
+		if (!zoomIn) {
+			isCameraZoomed = false;
+		}
+		WizardTimerManager->ClearTimer(ZoomCameraTimer);
 	}
 }

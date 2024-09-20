@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "InputActionValue.h"	//FInputActionValue struct header
+#include "Interfaces/HitInterface.h"
 #include "Bird.generated.h"  // this header file has to be last header file in order to reflection system work properly!!!
 
 class UCapsuleComponent;
@@ -16,7 +17,7 @@ class UCameraComponent;
 
 
 UCLASS()
-class MYOPENWORLDPROJECT_API ABird : public APawn
+class MYOPENWORLDPROJECT_API ABird : public APawn, public IHitInterface
 {
 	GENERATED_BODY()
 
@@ -29,6 +30,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	void GetHit() override;
 
 protected:
 	// Called when the game starts or when spawned

@@ -90,7 +90,23 @@ protected:
 
 
 private:
-	//FTimerHandle MemberTimerHandle; //!
+
+	FTimerManager* WizardTimerManager;
+
+	UPROPERTY(EditAnywhere, Category = "TIME")
+	float runningTime = 0;						//actor running time
+	
+	UPROPERTY(EditAnywhere, Category = "TIME")
+	float deltaTime = 0;
+
+	UPROPERTY(EditAnywhere, Category = "CAMERA")
+	bool isCameraRotated = false;
+
+	UPROPERTY(EditAnywhere, Category = "CAMERA")
+	bool isCameraLocked = false;
+
+	UPROPERTY(EditAnywhere, Category = "CAMERA")
+	bool isCameraZoomed = false;
 
 	UPROPERTY(EditAnywhere, Category = "WIZARD PLAYER STATE")
 	WizardPlayerState WizardPState = WizardPlayerState::None;		//player state
@@ -101,14 +117,12 @@ private:
 	UPROPERTY(EditAnywhere, Category = "WIZARD PLAYER STATE")
 	WizardItemState WizardIState = WizardItemState::None;			//player item state
 
-	UPROPERTY(EditAnywhere, Category = "TIME")
-	float runningTime = 0;						//actor running time
-	
-	UPROPERTY(EditAnywhere, Category = "TIME")
-	float deltaTime = 0;
 
 	UPROPERTY(EditAnywhere, Category = "CAMERA")
-	bool isCameraLocked = false;
+	USceneComponent* CameraZoomInPos;
+
+	UPROPERTY(EditAnywhere, Category = "CAMERA")
+	USceneComponent* CameraZoomOutPos;
 
 	UPROPERTY(EditAnywhere)
 	USpringArmComponent* SpringArm;
@@ -183,10 +197,32 @@ private:
 	void Attack(const FInputActionValue& value);
 
 	UFUNCTION(BlueprintCallable)
+	void SetAttackCooldown();
+
+	UPROPERTY(EditAnywhere, Category = "TIMER HANDLES")
+	FTimerHandle AttackCooldownTimer;
+
+	UFUNCTION(BlueprintCallable)
 	void LockCamera(bool lock);
 
 	UFUNCTION(BlueprintCallable)
-	bool RotateCameraToAim(FRotator CurrentRotation, FRotator TargetRotation);
+	void ZoomCamera(bool zoomIn);
+
+	UFUNCTION(BlueprintCallable)
+	void PerformZoomCamera(bool zoomIN);
+	
+	UPROPERTY(EditAnywhere, Category = "TIMER HANDLES")
+	FTimerHandle ZoomCameraTimer;
+
+	UFUNCTION(BlueprintCallable)
+	void RotateCameraToAim(bool rotate);
+
+	UFUNCTION(BlueprintCallable)
+	void PerformCameraRotationToAim();
+
+	UPROPERTY(EditAnywhere, Category = "TIMER HANDLES")
+	FTimerHandle RotateCameraToAimTimer;
+
 };
 
 

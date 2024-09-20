@@ -8,7 +8,6 @@
 #include "Weapon.generated.h"
 
 class UCameraComponent;
-
 class AWizard;
 /**
  * 
@@ -22,7 +21,8 @@ public:
 	AWeapon();
 	
 	virtual void Tick(float DeltaTime) override;
-	
+
+	//we can't have UFUNCTION() macro on override functions
 	void Equip(AWizard* Player, FName SocketName) override;
 
 	void Unequip(AWizard* Player, FName SocketName) override;

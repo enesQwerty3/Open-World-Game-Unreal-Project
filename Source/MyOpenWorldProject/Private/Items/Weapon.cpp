@@ -5,7 +5,7 @@
 #include "Characters/Wizard.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Camera/CameraComponent.h"
-
+#include "Interfaces/HitInterface.h"
 
 AWeapon::AWeapon()
 {
@@ -15,7 +15,7 @@ AWeapon::AWeapon()
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	if (GetMyItemState() == ItemState::NotEquipped) {
+	if (GetMyItemState() == ItemState::NotEquipped) {	//because some weapons can be spawned equipped check when spawned
 		GetStaticMesh()->SetSimulatePhysics(true);	//simulate physics, doesn't work inside constructor function
 		GetStaticMesh()->SetMassOverrideInKg(FName("NAME_None"), 100.0f, true);
 	}
@@ -93,7 +93,6 @@ void AWeapon::Fire(AWizard* Player, UCameraComponent* Camera)
 	*/
 
 	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(this);
 	ActorsToIgnore.Add(Player);
 
 	FHitResult OutHit;
@@ -116,9 +115,15 @@ void AWeapon::Fire(AWizard* Player, UCameraComponent* Camera)
 	FLinearColor::Green,
 	5.0f);
 	
-	if (OutHit.bBlockingHit) {
-		FString OtherActorName = OutHit.GetActor()->GetName();
+	if (OutHit.GetActor()) {
+		AActor* OtherActor = OutHit.GetActor();
+		FString OtherActorName = OtherActor->GetName();
+		
 		UE_LOG(LogTemp, Warning, TEXT("OtherActorName: %s"), *OtherActorName);
+
+		if (IHitInterface* OtherActorHitInterface = Cast<IHitInterface>(OtherActor)) {
+			OtherActorHitInterface->GetHit();
+		}
 	}
 	//end of LineTrace
 }

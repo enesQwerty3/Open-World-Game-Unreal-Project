@@ -29,11 +29,21 @@ ABird::ABird()
 	Capsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Bird Capsule"));
 	Capsule->SetCapsuleHalfHeight(20.0f);
 	Capsule->SetCapsuleRadius(15.0f);
-	SetRootComponent(Capsule);
-	
-	BirdMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Bird Skeletal Mesh"));
-	BirdMesh->SetupAttachment(GetRootComponent()); //instead of RootComponent argument, Capsule or GetRootComponent can be used
 
+	//set capsule collision
+	Capsule->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
+	Capsule->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	Capsule->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	Capsule->SetGenerateOverlapEvents(true);
+	
+	SetRootComponent(Capsule);	//set capsule root component
+	
+	//set mesh collision
+	BirdMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Bird Skeletal Mesh"));
+	BirdMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	BirdMesh->SetGenerateOverlapEvents(false);
+	BirdMesh->SetupAttachment(GetRootComponent());	//instead of RootComponent argument, Capsule or GetRootComponent can be used
+	
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(Capsule);
 	SpringArm->TargetArmLength = 300.0f;
@@ -41,7 +51,7 @@ ABird::ABird()
 
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	ViewCamera->SetupAttachment(SpringArm);
-	//AutoPossessPlayer = EAutoReceiveInput::Player0;					//gets possesion of a player
+	//AutoPossessPlayer = EAutoReceiveInput::Player0;				//gets possesion of a player
 }										//Player0 identifies us
 
 // Called when the game starts or when spawned
@@ -137,3 +147,9 @@ void ABird::Fly(const FInputActionValue& value) {//can't fly properly Controller
 		//UE_LOG(LogTemp, Warning, TEXT("UpwardDirection.X: %f - UpwardDirection.Y: %f"), UpwardDirection.X, UpwardDirection.Y);
 	}
 }
+
+void ABird::GetHit()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Bird get hit!"));
+}
+
