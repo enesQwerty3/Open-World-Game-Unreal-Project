@@ -162,7 +162,7 @@ void AWizard::Look(const FInputActionValue& value)
 	}
 }
 
-void AWizard::JumpCustom(const FInputActionValue& value) 
+void AWizard::JumpCustom(const FInputActionValue& value) //doesn't finish yet
 {
 	bool isJumpValid = GetController() ? true : false;
 
@@ -213,29 +213,21 @@ void AWizard::DropEquippedItem(const FInputActionValue& value) {	//doesn't have 
 }
 
 
-void AWizard::Aim(const FInputActionValue& value)
+void AWizard::Aim(const FInputActionValue& value)	//aim animation doesn't play properly!!!
 {
 	bool isAimValid = GetController() && value.Get<bool>() && GetPlayerWeapon() && GetWizardAState() != WizardActionState::Attacking  && GetWizardPState() != WizardPlayerState::Jumping;
 	if (isAimValid) {
 		SetWizardAState(WizardActionState::Aiming);
-
 		RotateCameraToAim(true);
-		//zoom camera after interp to aiming rotation
-		
-		ZoomCamera(true);		//ZoomCamera and LockCamera will be called with timer!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		
-	
+		ZoomCamera(true);		
 	}
 
-	else if (!value.Get<bool>()) // may be cancel attack if aiming cancelled? if(notAiming && Attacking) cancel attack
+	else if (!value.Get<bool>() && GetPlayerWeapon()) // may be cancel attack if aiming cancelled? if(notAiming && Attacking) cancel attack
 	{
 		//set camera to default position here	
 		SetWizardAState(WizardActionState::None);
-	
-		//ZoomCamera(false);
 		RotateCameraToAim(false);
-		ZoomCamera(false);
-		
+		ZoomCamera(false);	
 	}
 }
 
@@ -246,7 +238,6 @@ void AWizard::Attack(const FInputActionValue& value) //animation gets stuck when
 		SetWizardAState(WizardActionState::Attacking);
 		PlayerWeapon->Fire(this, ViewCamera);	//fire weapon
 		SetAttackCooldown();
-		
 	}
 }
 
@@ -264,7 +255,7 @@ void AWizard::RotateCameraToAim(bool rotate) //it rotates capsule component to a
 			//if camera rotation timer is not set
 			FTimerDelegate RotateCameraToAimDelegate = FTimerDelegate::CreateUObject(this, &AWizard::PerformCameraRotationToAim);
 			WizardTimerManager->SetTimer(RotateCameraToAimTimer, RotateCameraToAimDelegate, deltaTime, true, -1.0f);
-			UE_LOG(LogTemp, Warning, TEXT("	WizardTimerManager->SetTimer"));
+			//UE_LOG(LogTemp, Warning, TEXT("	WizardTimerManager->SetTimer"));
 		}
 	}
 
@@ -293,7 +284,7 @@ void AWizard::PerformCameraRotationToAim() {
 		isCameraRotated = true;
 		WizardTimerManager->ClearTimer(RotateCameraToAimTimer);
 		LockCamera(true);
-		UE_LOG(LogTemp, Warning, TEXT("	WizardTimerManager->ClearTimer"));
+		//UE_LOG(LogTemp, Warning, TEXT("	WizardTimerManager->ClearTimer"));
 	}
 }
 
@@ -313,12 +304,25 @@ void AWizard::LockCamera(bool lock)
 
 void AWizard::ZoomCamera(bool zoomIn)
 {
-	if (isCameraZoomed && !zoomIn || !isCameraZoomed && zoomIn) {
-		if (!WizardTimerManager->TimerExists(ZoomCameraTimer)) {
-			FTimerDelegate ZoomCameraTimerDelegate = FTimerDelegate::CreateUObject(this, &AWizard::PerformZoomCamera, zoomIn);
-			WizardTimerManager->SetTimer(ZoomCameraTimer, ZoomCameraTimerDelegate, deltaTime, true, -1.0f);
+	if (zoomIn && !WizardTimerManager->TimerExists(ZoomInCameraTimer)) {
+		if(WizardTimerManager->TimerExists(ZoomOutCameraTimer))
+			WizardTimerManager->ClearTimer(ZoomOutCameraTimer);
+		FTimerDelegate ZoomCameraTimerDelegate = FTimerDelegate::CreateUObject(this, &AWizard::PerformZoomCamera, zoomIn);
+		WizardTimerManager->SetTimer(ZoomInCameraTimer, ZoomCameraTimerDelegate, deltaTime, true, -1.0f);
+
+	}
+
+	else if (!zoomIn && !WizardTimerManager->TimerExists(ZoomOutCameraTimer)) {
+		if (WizardTimerManager->TimerExists(ZoomInCameraTimer))
+			WizardTimerManager->ClearTimer(ZoomInCameraTimer);
+		FTimerDelegate ZoomCameraTimerDelegate = FTimerDelegate::CreateUObject(this, &AWizard::PerformZoomCamera, zoomIn);
+		WizardTimerManager->SetTimer(ZoomOutCameraTimer, ZoomCameraTimerDelegate, deltaTime, true, -1.0f);
+		FString Message = FString::Printf(TEXT("zoom out camera"));
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(201, 1.0f, FColor::Green, Message);  //on screen message
 		}
 	}
+
 }
 
 void AWizard::PerformZoomCamera(bool zoomIn) {
@@ -340,21 +344,19 @@ void AWizard::PerformZoomCamera(bool zoomIn) {
 		springArmTargetLength = 300.0f;		//spring arm zoom out length
 	}
 
-	if (!SpringArmCurrentPos.Equals(SpringArmTargetPos)) {
-		FVector NewPos = FMath::VInterpTo(SpringArmCurrentPos, SpringArmTargetPos, deltaTime, 10.0f);
-		SpringArm->SetRelativeLocation(NewPos);
+	if (!SpringArmCurrentPos.Equals(SpringArmTargetPos, 1) || (springArmCurrentLength != springArmTargetLength)) {
+		FVector NewSpringArmPos = FMath::VInterpTo(SpringArmCurrentPos, SpringArmTargetPos, deltaTime, 10.0f);
+		SpringArm->SetRelativeLocation(NewSpringArmPos);
 
-		float newLength = FMath::FInterpTo(springArmCurrentLength, springArmTargetLength, deltaTime, 10.0f);
-		SpringArm->TargetArmLength = newLength;
-
-		isCameraZoomed = false;
+		float newSpringArmLength = FMath::FInterpTo(springArmCurrentLength, springArmTargetLength, deltaTime, 10.0f);
+		SpringArm->TargetArmLength = newSpringArmLength;
 	}
 
-	else {
-		isCameraZoomed = true;
-		if (!zoomIn) {
-			isCameraZoomed = false;
-		}
-		WizardTimerManager->ClearTimer(ZoomCameraTimer);
+	else if(zoomIn) {
+		WizardTimerManager->ClearTimer(ZoomInCameraTimer);
+	}
+
+	else if (!zoomIn) {
+		WizardTimerManager->ClearTimer(ZoomOutCameraTimer);
 	}
 }

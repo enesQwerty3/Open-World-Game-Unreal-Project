@@ -52,7 +52,7 @@ ABird::ABird()
 	ViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	ViewCamera->SetupAttachment(SpringArm);
 	//AutoPossessPlayer = EAutoReceiveInput::Player0;				//gets possesion of a player
-}										//Player0 identifies us
+}											//Player0 identifies us
 
 // Called when the game starts or when spawned
 void ABird::BeginPlay()

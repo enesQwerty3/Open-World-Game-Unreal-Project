@@ -84,7 +84,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE WizardItemState GetWizardIState() { return WizardIState; }
 	
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -106,7 +105,7 @@ private:
 	bool isCameraLocked = false;
 
 	UPROPERTY(EditAnywhere, Category = "CAMERA")
-	bool isCameraZoomed = false;
+	bool isCameraZoomedIn = false;
 
 	UPROPERTY(EditAnywhere, Category = "WIZARD PLAYER STATE")
 	WizardPlayerState WizardPState = WizardPlayerState::None;		//player state
@@ -212,7 +211,10 @@ private:
 	void PerformZoomCamera(bool zoomIN);
 	
 	UPROPERTY(EditAnywhere, Category = "TIMER HANDLES")
-	FTimerHandle ZoomCameraTimer;
+	FTimerHandle ZoomInCameraTimer = FTimerHandle();
+
+	UPROPERTY(EditAnywhere, Category = "TIMER HANDLES")
+	FTimerHandle ZoomOutCameraTimer = FTimerHandle();
 
 	UFUNCTION(BlueprintCallable)
 	void RotateCameraToAim(bool rotate);
@@ -222,7 +224,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "TIMER HANDLES")
 	FTimerHandle RotateCameraToAimTimer;
-
 };
 
 

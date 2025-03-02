@@ -93,7 +93,7 @@ void AWeapon::Fire(AWizard* Player, UCameraComponent* Camera)
 	*/
 
 	TArray<AActor*> ActorsToIgnore;
-	ActorsToIgnore.Add(Player);
+	ActorsToIgnore.AddUnique(Player);
 
 	FHitResult OutHit;
 
