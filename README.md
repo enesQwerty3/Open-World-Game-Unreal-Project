@@ -3,7 +3,7 @@ Open world game project to understand unreal engine and enhance my unreal engine
 
 ## Gameplay
 
-[Current progress.](https://streamable.com/lcjmiz)
+[Current progress.](https://streamable.com/ysd5jk)
 
 ## Features
 Will be added soon.
