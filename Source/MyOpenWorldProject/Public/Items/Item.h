@@ -25,8 +25,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	
-	
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetRunningTime() {return runningTime;}
 	
@@ -87,7 +85,5 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "ItemProperty - Movement Values")
 	float movementRate = 200.0f;
-
-
 
 };

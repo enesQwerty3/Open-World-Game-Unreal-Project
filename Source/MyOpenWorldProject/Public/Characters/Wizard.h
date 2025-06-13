@@ -14,6 +14,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class AItem;
 class AWeapon;
+class UAttributeComponent;
 
 UENUM(BlueprintType)
 enum class WizardPlayerState : uint8 { None, Created, Idling, Moving, Running, Jumping, Destroyed };
@@ -224,6 +225,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "TIMER HANDLES")
 	FTimerHandle RotateCameraToAimTimer;
+
+	UPROPERTY(VisibleAnywhere, Category = "Attribute Component")
+	UAttributeComponent* AttributeComponent = nullptr;
 };
 
 

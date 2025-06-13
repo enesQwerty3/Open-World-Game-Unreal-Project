@@ -27,6 +27,9 @@
 #include "Math/UnrealMathUtility.h"
 //
 
+//Attribute Component
+#include "AttributeComponent.h"
+
 AWizard::AWizard()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -56,7 +59,8 @@ AWizard::AWizard()
 	CameraZoomOutPos = CreateDefaultSubobject<USceneComponent>(TEXT("CameraZoomOutPos"));
 	CameraZoomOutPos->SetupAttachment(GetRootComponent());
 
-	
+	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attribute Component"));
+
 	AutoPossessPlayer = EAutoReceiveInput::Player0;		//set possession of Player0
 }
 
@@ -317,10 +321,6 @@ void AWizard::ZoomCamera(bool zoomIn)
 			WizardTimerManager->ClearTimer(ZoomInCameraTimer);
 		FTimerDelegate ZoomCameraTimerDelegate = FTimerDelegate::CreateUObject(this, &AWizard::PerformZoomCamera, zoomIn);
 		WizardTimerManager->SetTimer(ZoomOutCameraTimer, ZoomCameraTimerDelegate, deltaTime, true, -1.0f);
-		FString Message = FString::Printf(TEXT("zoom out camera"));
-		if (GEngine) {
-			GEngine->AddOnScreenDebugMessage(201, 1.0f, FColor::Green, Message);  //on screen message
-		}
 	}
 
 }

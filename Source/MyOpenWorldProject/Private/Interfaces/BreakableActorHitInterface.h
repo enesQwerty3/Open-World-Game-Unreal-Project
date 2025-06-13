@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "HitInterface.generated.h"
+#include "BreakableActorHitInterface.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UHitInterface : public UInterface
+class UBreakableActorHitInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -16,15 +16,12 @@ class UHitInterface : public UInterface
 /**
  * 
  */
-class MYOPENWORLDPROJECT_API IHitInterface
+class MYOPENWORLDPROJECT_API IBreakableActorHitInterface
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
-
 public:
-	virtual void GetHit(FVector ImpactPoint) = 0;
-
-protected:
-
+	UFUNCTION(BlueprintNativeEvent)	//blueprint overrideble function
+	void GetHit(const FVector& ImpactPoint);
 };

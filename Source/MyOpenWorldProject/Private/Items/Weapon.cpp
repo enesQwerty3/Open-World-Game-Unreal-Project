@@ -6,6 +6,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Interfaces/HitInterface.h"
+#include "Interfaces/BreakableActorHitInterface.h"
 
 AWeapon::AWeapon()
 {
@@ -95,37 +96,39 @@ void AWeapon::Fire(AWizard* Player, UCameraComponent* Camera)
 	TArray<AActor*> ActorsToIgnore;
 	ActorsToIgnore.AddUnique(Player);
 
-	FHitResult OutHit;
+	FHitResult OutHit = FHitResult();	//hit result
 
 	FVector CameraPos = Camera->GetComponentLocation();
 	FVector CameraForwardVector = Camera->GetForwardVector();
 	
 	//draw a LineTrace if projectile hits something, start point is where player fired the weapon and end point is where projectile hit something
 	UKismetSystemLibrary::LineTraceSingle(
-	this,
-	CameraPos,
-	CameraPos + CameraForwardVector * weaponRange,
-	ETraceTypeQuery::TraceTypeQuery1,
-	false,
-	ActorsToIgnore,
-	EDrawDebugTrace::ForDuration,
-	OutHit,
-	true,
-	FLinearColor::Red,
-	FLinearColor::Green,
-	5.0f);
+										this,
+										CameraPos,
+										CameraPos + CameraForwardVector * weaponRange,
+										ETraceTypeQuery::TraceTypeQuery1,
+										false,
+										ActorsToIgnore,
+										EDrawDebugTrace::ForDuration,
+										OutHit,
+										true,
+										FLinearColor::Red,
+										FLinearColor::Green,
+										5.f);
 	
 	if (OutHit.GetActor()) {
 		AActor* OtherActor = OutHit.GetActor();
 		FString OtherActorName = OtherActor->GetName();
 		
 		UE_LOG(LogTemp, Warning, TEXT("OtherActorName: %s"), *OtherActorName);
+		
+		if (IHitInterface* OtherActorHitInterface = Cast<IHitInterface>(OtherActor)) {//changed cast to cast checked
+			OtherActorHitInterface->GetHit(OutHit.ImpactPoint);
+		}
 
-		if (IHitInterface* OtherActorHitInterface = Cast<IHitInterface>(OtherActor)) {
-			OtherActorHitInterface->GetHit();
+		else if(IBreakableActorHitInterface* OtherBreakableActorHitInterface = Cast<IBreakableActorHitInterface>(OtherActor)){
+			OtherBreakableActorHitInterface->Execute_GetHit(OutHit.GetActor(), OutHit.ImpactPoint); //executes Get Hit bp native event
+			CreateFields(OutHit.Location); 
 		}
 	}
-	//end of LineTrace
 }
-
-

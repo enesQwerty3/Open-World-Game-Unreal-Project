@@ -35,6 +35,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetWeaponRange() { return weaponRange;}
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void CreateFields(const FVector& location);
 
 protected:
 

@@ -148,8 +148,18 @@ void ABird::Fly(const FInputActionValue& value) {//can't fly properly Controller
 	}
 }
 
-void ABird::GetHit()
+void ABird::GetHit(FVector ImpactPoint)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Bird get hit!"));
+	
+	float dotProduct = FVector::DotProduct(GetActorForwardVector(), (ImpactPoint - GetActorLocation()).GetSafeNormal());	//
+	float degreeBetweenHitAndForward = FMath::RadiansToDegrees(FMath::Acos(dotProduct));
+	FVector CrossProduct = FVector::CrossProduct(GetActorForwardVector(), (ImpactPoint - GetActorLocation()).GetSafeNormal());
+	if(CrossProduct.Z < 0)
+		degreeBetweenHitAndForward*=-1;
+	DrawDebugDirectionalArrow(GetWorld(), ImpactPoint, ImpactPoint + GetActorForwardVector() * 100.f, 100.f, FColor::Red, false, 5.f);
+	DrawDebugDirectionalArrow(GetWorld(), ImpactPoint, ImpactPoint + CrossProduct.GetSafeNormal() * 100.f, 100.f, FColor::Blue, false, 5.f);
+	DrawDebugDirectionalArrow(GetWorld(), ImpactPoint, ImpactPoint + (ImpactPoint - GetActorLocation()).GetSafeNormal() * 100.f, 100.f, FColor::Magenta, false, 5.f);
+	UE_LOG(LogTemp, Display, TEXT("Degree between: %lf"), degreeBetweenHitAndForward);
 }
 

@@ -31,7 +31,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
-	void GetHit() override;
+	void GetHit(FVector ImpactPoint) override;
 
 protected:
 	// Called when the game starts or when spawned

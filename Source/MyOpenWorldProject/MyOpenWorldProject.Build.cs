@@ -8,7 +8,7 @@ public class MyOpenWorldProject : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" , "EnhancedInput" });  // added EnhancedInput module.
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" , "EnhancedInput", "GeometryCollectionEngine", "Niagara", "UMG" });  // added EnhancedInput module.
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

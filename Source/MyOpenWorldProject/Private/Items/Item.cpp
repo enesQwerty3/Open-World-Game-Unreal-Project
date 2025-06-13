@@ -35,21 +35,6 @@ void AItem::Tick(float DeltaTime)
 	if (GEngine) {
 		GEngine->AddOnScreenDebugMessage(2, 1.0f, FColor::Green, Message);  //print running time as on screen message
 	}
-
-	/*
-	FVector actorLocation = GetActorLocation();
-	UWorld* world = GetWorld();
-
-	if (world) {
-		DrawDebugSphere(world, actorLocation, 100, 24, FColor::Red, false, -1.0f, (uint8)0U, 1.0f);
-	}
-
-		//movementRate (cm/s) * DeltaTime (s/frame) -> by this formula movement depends on frame but not how much of frame
-	//SetActorLocation(actorLocation + (actorLocation.ForwardVector + actorLocation.RightVector) * movementRate * DeltaTime);
-	SetActorLocation(actorLocation + (actorLocation.UpVector * FMath::Sin(this->runningTime) * 0.25f) + (actorLocation.ForwardVector * this->movementRate * DeltaTime));
-									//sinusoidal wave movement											//forward movement
-	*/
-
 }
 
 
