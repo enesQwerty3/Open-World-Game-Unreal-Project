@@ -23,7 +23,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	//we can't have UFUNCTION() macro on override functions
-	void Equip(AWizard* Player, FName SocketName) override;
+	virtual void Equip(AWizard* Player, FName SocketName, AActor* equippedActor, APawn* equippedInstigator) override;
 
 	void Unequip(AWizard* Player, FName SocketName) override;
 
@@ -54,4 +54,7 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category = "WEAPON SPECS")
 	float weaponRange = 10000.0f;
+
+	UPROPERTY(EditAnywhere, Category = "WEAPON SPECS")
+	float weaponDamage = 25.f;
 };

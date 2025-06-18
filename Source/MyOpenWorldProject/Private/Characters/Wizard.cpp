@@ -28,7 +28,7 @@
 //
 
 //Attribute Component
-#include "AttributeComponent.h"
+#include "Components/AttributeComponent.h"
 
 AWizard::AWizard()
 {
@@ -184,7 +184,7 @@ void AWizard::EquipItem(const FInputActionValue& value)		//doesn't have animatio
 	bool isEquipItemBackValid = GetController() && (GetPlayerItem() || GetPlayerWeapon()) && GetWizardIState() == WizardItemState::None;
 	
 	if (isEquipNewItemValid) {
-		CollidingItem->Equip(this, FName("HandRSocket"));		//using HandRSocket to attach weapons
+		CollidingItem->Equip(this, FName("HandRSocket"), this, this);		//using HandRSocket to attach weapons
 		SetWizardIState(WizardItemState::EquippedWeapon);
 	}
 

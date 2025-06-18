@@ -7,6 +7,7 @@
 #include "Camera/CameraComponent.h"
 #include "Interfaces/HitInterface.h"
 #include "Interfaces/BreakableActorHitInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 AWeapon::AWeapon()
 {
@@ -52,7 +53,7 @@ void AWeapon::SphereOnComponentEndOverlap(UPrimitiveComponent* OverlappedCompone
 }
 
 
-void AWeapon::Equip(AWizard* Player, FName SocketName)
+void AWeapon::Equip(AWizard* Player, FName SocketName, AActor* equippedActor, APawn* equippedInstigator)
 {
 	ItemMesh->SetSimulatePhysics(false);		//stop simulating physics
 	SphereCollision->SetGenerateOverlapEvents(false);	//stop sphere collision events
@@ -61,6 +62,8 @@ void AWeapon::Equip(AWizard* Player, FName SocketName)
 	MyItemState = ItemState::Equipped;		//change this item's state
 	Player->SetCollidingItem(nullptr);		//clear player colliding item property	
 	Player->SetPlayerWeapon(this);			//set player weapon	property
+	SetOwner(equippedActor);
+	SetInstigator(equippedInstigator);
 }
 
 void AWeapon::Unequip(AWizard* Player, FName SocketName)
@@ -127,7 +130,8 @@ void AWeapon::Fire(AWizard* Player, UCameraComponent* Camera)
 		}
 
 		else if(IBreakableActorHitInterface* OtherBreakableActorHitInterface = Cast<IBreakableActorHitInterface>(OtherActor)){
-			OtherBreakableActorHitInterface->Execute_GetHit(OutHit.GetActor(), OutHit.ImpactPoint); //executes Get Hit bp native event
+			OtherBreakableActorHitInterface->Execute_GetHit(OutHit.GetActor(), OutHit.ImpactPoint, weaponDamage); //executes Get Hit bp native event
+			UGameplayStatics::ApplyDamage(OtherActor, weaponDamage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
 			CreateFields(OutHit.Location); 
 		}
 	}

@@ -35,7 +35,7 @@ public:
 	FORCEINLINE ItemState GetMyItemState() { return MyItemState; }
 
 	UFUNCTION(BlueprintCallable)
-	virtual void Equip(AWizard* Player, FName SocketName);
+	virtual void Equip(AWizard* Player, FName SocketName, AActor* equippedActor, APawn* equippedInstigator);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void Unequip(AWizard* Player, FName SocketName);

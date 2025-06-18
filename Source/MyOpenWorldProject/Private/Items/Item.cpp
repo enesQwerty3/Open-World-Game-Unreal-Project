@@ -52,7 +52,7 @@ void AItem::SphereOnComponentEndOverlap(UPrimitiveComponent* OverlappedComponent
 }
 
 
-void AItem::Equip(AWizard* Player, FName SocketName)
+void AItem::Equip(AWizard* Player, FName SocketName, AActor* equippedActor, APawn* equippedInstigator)
 {
 	UE_LOG(LogTemp, Display, TEXT("Equipped Item"));
 }
