@@ -51,35 +51,16 @@ void ABreakableActor::SpawnTreasure()
 	}
 }
 
-void ABreakableActor::GetDamage(float damage)
-{
-	//if (Health > 0) {
-	//	Health = FMath::Clamp(Health-=damage, 0.f, 100.f); //reduce health
-	//	if (HealthBarComponent) {
-	//		HealthBarComponent->UpdateHealthBarPercent(Health/MaxHealth);
-	//		//actor damaged
-	//		UE_LOG(LogTemp, Warning, TEXT("Health bar component not null!"));
-	//	}
-
-	//	//HealthBarComponent isn't null	
-	//}
-
-	//else {
-	//	//actor dead
-	//}
-
-	//UE_LOG(LogTemp, Warning, TEXT("Health: %f"), Health);
-}
-
+//Take damage will be automatically called by ApplyDamage function.
 float ABreakableActor::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	AActor* DamageCauserOwner = DamageCauser->GetOwner() ? DamageCauser->GetOwner() : DamageCauser;
 
-	if (AttributeComponent) {
+	if (AttributeComponent) { // check if attribute component is not null
 		AttributeComponent->RecieveDamage(DamageAmount);
 		
-		if (HealthBarComponent) {
-			if (AttributeComponent->GetHealth() > 0) { //reduce health
+		if (HealthBarComponent) {	//these functions may be moved inside to the AttributeComponent::RecieveDamage function?
+			if (AttributeComponent->GetHealth() >= 0) { //reduce health
 				HealthBarComponent->UpdateHealthBarPercent(AttributeComponent->GetHealth() / AttributeComponent->GetMaxHealth());
 				//actor damaged
 				//UE_LOG(LogTemp, Warning, TEXT("Health bar component not null!"));

@@ -7,10 +7,13 @@
 #include "Camera/CameraComponent.h"
 #include "Interfaces/HitInterface.h"
 #include "Interfaces/BreakableActorHitInterface.h"
+#include "Interfaces/EnemyHitInterface.h"
 #include "Kismet/GameplayStatics.h"
 
 AWeapon::AWeapon()
 {
+
+
 }
 
 
@@ -125,14 +128,20 @@ void AWeapon::Fire(AWizard* Player, UCameraComponent* Camera)
 		
 		UE_LOG(LogTemp, Warning, TEXT("OtherActorName: %s"), *OtherActorName);
 		
+		//if actor has a IHitInterface
 		if (IHitInterface* OtherActorHitInterface = Cast<IHitInterface>(OtherActor)) {//changed cast to cast checked
 			OtherActorHitInterface->GetHit(OutHit.ImpactPoint);
 		}
 
+		//if actor has a IBreakableActorHitInterface
 		else if(IBreakableActorHitInterface* OtherBreakableActorHitInterface = Cast<IBreakableActorHitInterface>(OtherActor)){
 			OtherBreakableActorHitInterface->Execute_GetHit(OutHit.GetActor(), OutHit.ImpactPoint, weaponDamage); //executes Get Hit bp native event
 			UGameplayStatics::ApplyDamage(OtherActor, weaponDamage, GetInstigator()->GetController(), this, UDamageType::StaticClass());
 			CreateFields(OutHit.Location); 
+		}
+
+		else if (IEnemyHitInterface* OtherEnemyActorHitInterface = Cast<IEnemyHitInterface>(OtherActor)) {
+			OtherEnemyActorHitInterface->GetHitActor(OutHit.ImpactPoint, GetOwner());
 		}
 	}
 }

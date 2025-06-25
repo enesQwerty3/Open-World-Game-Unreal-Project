@@ -40,8 +40,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SpawnTreasure();
 
-	UFUNCTION(BlueprintCallable)
-	void GetDamage(float damage);
 
 protected:
 	virtual void BeginPlay() override;

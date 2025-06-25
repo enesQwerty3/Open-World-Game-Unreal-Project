@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "HitInterface.generated.h"
+#include "EnemyHitInterface.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UHitInterface : public UInterface
+class UEnemyHitInterface : public UInterface 
 {
 	GENERATED_BODY()
 };
@@ -16,16 +16,12 @@ class UHitInterface : public UInterface
 /**
  * 
  */
-class MYOPENWORLDPROJECT_API IHitInterface
+class MYOPENWORLDPROJECT_API IEnemyHitInterface
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
-
 public:
-	virtual void GetHit(FVector ImpactPoint) = 0;
 
-
-protected:
-
+	virtual void GetHitActor(FVector ImpactPoint, AActor* Weapon) = 0;
 };

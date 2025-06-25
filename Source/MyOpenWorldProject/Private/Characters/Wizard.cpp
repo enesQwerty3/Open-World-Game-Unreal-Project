@@ -7,20 +7,18 @@
 //EnhancedInput
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
-#include "Components/InputComponent.h"
-//EnhancedInput
+//
 
 //Camera and SpringArm component
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 //
 
-//UCharacterMovementComponent
+//Components
+#include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"	 
-//
- 
-//UCapsuleComponent
 #include "Components/CapsuleComponent.h"
+#include "Components/WidgetComponent.h"
 //
 
 //RInterp
@@ -29,6 +27,7 @@
 
 //Attribute Component
 #include "Components/AttributeComponent.h"
+
 
 AWizard::AWizard()
 {
@@ -61,6 +60,9 @@ AWizard::AWizard()
 
 	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("Attribute Component"));
 
+	CrosshairWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("Crosshair Widget Component"));
+	CrosshairWidgetComponent->SetupAttachment(RootComponent);
+
 	AutoPossessPlayer = EAutoReceiveInput::Player0;		//set possession of Player0
 }
 
@@ -76,6 +78,11 @@ void AWizard::BeginPlay()
 	}
 
 	WizardTimerManager = &GetWorld()->GetTimerManager();
+	
+	if (UUserWidget* Crosshair = CrosshairWidgetComponent->GetWidget()) {
+		Crosshair->AddToViewport();
+	}
+
 }
 
 void AWizard::Tick(float DeltaTime)

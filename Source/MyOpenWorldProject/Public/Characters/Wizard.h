@@ -1,11 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"	//FInputActionValue struct header
-
 #include "Wizard.generated.h"
 
 class UInputMappingContext;
@@ -15,6 +12,8 @@ class UCameraComponent;
 class AItem;
 class AWeapon;
 class UAttributeComponent;
+class UWidgetComponent;
+
 
 UENUM(BlueprintType)
 enum class WizardPlayerState : uint8 { None, Created, Idling, Moving, Running, Jumping, Destroyed };
@@ -92,6 +91,9 @@ protected:
 private:
 
 	FTimerManager* WizardTimerManager;
+
+	UPROPERTY(EditAnywhere, Category = "Widgets")
+	UWidgetComponent* CrosshairWidgetComponent;
 
 	UPROPERTY(EditAnywhere, Category = "TIME")
 	float runningTime = 0;						//actor running time
